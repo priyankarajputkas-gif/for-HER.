@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi Amor — A Surprise for You</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#ffecd2;
+      --bg2:#fcb69f;
+      --accent:#ff577f;
+      --card:#fff7f8;
+      --muted:#6b3642;
+      --glass: rgba(255,255,255,0.14);
+      --glass-2: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--muted);}
+    button{font-family:inherit;cursor:pointer}
+    a{color:inherit}
+
+    /* Page layout */
+    .stage{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:2rem;
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.12), transparent 10%),
+        radial-gradient(900px 400px at 90% 90%, rgba(255,255,255,0.06), transparent 10%),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* subtle sparkling bokeh */
+    .bokeh{
+      pointer-events:none;
+      position:absolute;
+      inset:0;
+      z-index:0;
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.06) 0 8%, transparent 10%),
+        radial-gradient(circle at 80% 70%, rgba(255,255,255,0.04) 0 6%, transparent 8%);
+      mix-blend-mode:soft-light;
+    }
+
+    /* Center big button */
+    .center-card{
+      z-index:5;
+      width:100%;
+      max-width:860px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:1rem;
+    }
+    .mi-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:1.2rem 2.6rem;
+      border-radius:999px;
+      font-size:2.6rem;
+      color:#fff;
+      background:linear-gradient(90deg,var(--accent),#ff9db3 60%);
+      border:none;
+      box-shadow:0 18px 40px rgba(255,87,127,0.18), inset 0 -6px 18px rgba(0,0,0,0.06);
+      transform-origin:center;
+      transition:transform .18s ease, box-shadow .18s ease;
+      font-family:"Great Vibes", serif;
+      letter-spacing:0.02em;
+      text-transform:none;
+    }
+    .mi-btn:active{transform:scale(.98)}
+    .subtitle{color:rgba(255,255,255,0.92);opacity:.95;margin:0;font-weight:300}
+
+    /* Love scene (hidden initially) */
+    .love-scene{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:3rem 1rem;
+      gap:1.25rem;
+      flex-direction:column;
+      z-index:4;
+      opacity:0;
+      pointer-events:none;
+      transform: translateY(20px) scale(.995);
+      transition: opacity .6s cubic-bezier(.16,.8,.24,1), transform .6s cubic-bezier(.16,.8,.24,1);
+    }
+    .love-scene.active{
+      opacity:1;
+      pointer-events:auto;
+      transform:none;
+    }
+
+    .top-bar{
+      width:100%;
+      max-width:1000px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      z-index:6;
+    }
+    .title-wrap{
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      padding:1.2rem 1.4rem;
+      border-radius:14px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.08);
+      border:1px solid rgba(255,255,255,0.12);
+      display:flex;
+      gap:1rem;
+      align-items:center;
+    }
+    .big-title{
+      font-family:"Great Vibes", serif;
+      font-size:2.6rem;
+      color:#7d1b39;
+      margin:0;
+    }
+    .controls{display:flex;gap:.6rem;align-items:center}
+    .circle-btn{
+      background:var(--card);border:none;padding:.5rem .75rem;border-radius:10px;color:var(--muted);
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+      display:inline-flex;align-items:center;gap:.5rem;
+    }
+    .circle-btn span{font-weight:600}
+    .ghost{background:transparent;border:1px solid rgba(123,20,45,0.08);padding:.5rem .8rem;border-radius:10px;color:var(--muted)}
+
+    /* Card containing message and gallery */
+    .content{
+      z-index:6;
+      width:100%;
+      max-width:1000px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:1rem;
+      align-items:start;
+    }
+    .message-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,248,248,0.92));
+      padding:1.2rem 1.4rem;
+      border-radius:14px;
+      box-shadow:0 18px 40px rgba(0,0,0,0.08);
+      border:1px solid rgba(255,255,255,0.5);
+      color:var(--muted);
+      overflow:hidden;
+      position:relative;
+    }
+    .message-scroll{
+      max-height:56vh;
+      overflow:auto;
+      padding-right:6px;
+      line-height:1.6;
+      font-size:1.02rem;
+      white-space:pre-wrap;
+    }
+    .message-scroll p{margin:0 0 1rem}
+    .type-cursor{
+      display:inline-block;
+      width:1px;
+      background:var(--muted);
+      margin-left:2px;
+      animation:blink 900ms steps(2) infinite;
+      height:1.2em;
+      vertical-align:bottom;
+    }
+    @keyframes blink{50%{opacity:0}}
+
+    /* Right column: gallery + actions */
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:.8rem;
+      align-items:center;
+    }
+    .gallery{
+      width:100%;
+      background:linear-gradient(180deg,var(--glass),var(--glass-2));
+      padding:.8rem;
+      border-radius:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:.6rem;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,0.08);
+      min-height:120px;
+    }
+    .thumb{
+      width:84px;height:84px;border-radius:18px;overflow:hidden;border:4px solid rgba(255,255,255,0.7);
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+      display:inline-block;object-fit:cover;cursor:pointer;
+      transform-origin:center;
+      transition:transform .18s ease;
+      background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23ffd6e1" d="M12 21s-7.5-4.6-10-8.2C-1.4 8.2 3 3 7.5 6.2 9.4 7.6 10 9 12 10.8 14 9 14.6 7.6 16.5 6.2 21 3 23.4 8.2 22 12.8 19.5 16.4 12 21 12 21z"/></svg>') center/60% no-repeat;
+    }
+    .thumb:hover{transform:translateY(-6px) scale(1.02)}
+
+    .upload-row{display:flex;gap:.6rem;align-items:center}
+    .file-input{display:none}
+
+    /* Floating particles layer */
+    .particles{position:absolute;inset:0;pointer-events:none;z-index:3}
+
+    /* Lightbox */
+    .lightbox{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:999;opacity:0;pointer-events:none;transition:opacity .18s ease;
+    }
+    .lightbox.open{opacity:1;pointer-events:auto}
+    .lightbox img{max-width:94vw;max-height:86vh;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+
+    /* small screens */
+    @media (max-width:920px){
+      .content{grid-template-columns:1fr; padding-bottom:2rem}
+      .side{order:2}
+      .message-card{order:1}
+    }
+    @media (max-width:520px){
+      .mi-btn{font-size:2.2rem;padding:1rem 2rem}
+      .big-title{font-size:2rem}
+      .gallery{min-height:88px}
+      .thumb{width:calc(24vw - 8px);height:calc(24vw - 8px);border-radius:14px}
+    }
+
+    /* accessibility: reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .mi-btn,.love-scene,.particles *{transition:none !important;animation:none !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="bokeh" aria-hidden="true"></div>
+
+    <!-- Initial center -->
+    <div class="center-card" id="intro">
+      <button id="miAmorBtn" class="mi-btn" aria-label="Mi Amor button">mi amor</button>
+      <p class="subtitle">Tap the button, my love — a little surprise awaits you ✨</p>
+    </div>
+
+    <!-- Love scene (hidden until clicked) -->
+    <div class="love-scene" id="loveScene" role="main" aria-hidden="true">
+      <div class="top-bar">
+        <div class="title-wrap">
+          <h1 class="big-title">Para mi amor</h1>
+        </div>
+
+        <div class="controls" aria-hidden="false">
+          <button id="playMusic" class="circle-btn" title="Play gentle ambient music">
+            ♫ <span id="musicLabel">Play music</span>
+          </button>
+          <button id="skipBtn" class="circle-btn" title="Skip typing">⏭ <span>Skip</span></button>
+          <button id="backBtn" class="ghost" title="Go back">← Back</button>
+        </div>
+      </div>
+
+      <div class="content" role="region">
+        <div class="message-card" aria-live="polite">
+          <div class="message-scroll" id="messageScroll">
+            <!-- typed message will appear here -->
+            <div id="typedText" aria-hidden="false"></div><span id="cursor" class="type-cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <aside class="side" aria-label="Photos and actions">
+          <div class="gallery" id="gallery" aria-live="polite" aria-label="Photo gallery">
+            <!-- thumbnails go here -->
+          </div>
+
+          <div class="upload-row">
+            <label for="fileInput" class="circle-btn" style="cursor:pointer">📷 Add photos</label>
+            <input id="fileInput" class="file-input" type="file" accept="image/*" multiple>
+            <button id="confettiBtn" class="ghost" title="Send confetti">🎉 Confetti</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Particles layer -->
+    <div class="particles" id="particles" aria-hidden="true"></div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
+      <img id="lightboxImg" alt="">
+    </div>
+  </div>
+
+  <script>
+    // ---------- Content (your exact message) ----------
+    const MESSAGE = `Hey my love,
+
+Sometimes when I think about our future, it feels like a movie I never want to end – just you and me, laughing, teasing, kissing, and getting lost in our own little world. Every time I imagine us years from now, I still see you as the same beautiful, crazy, adorable girl I fell for, and me still unable to keep my eyes or my hands off you.
+
+I picture us in our own place, arguing about silly things like what to eat, who took up all the blanket, or who snores louder, and then making up with long hugs and slow kisses that make the whole world disappear. I see us cooking together, you tasting the food and me pretending it’s bad just so you’ll feed me with your hands and roll your eyes at me while you smile.
+
+I think about our lazy Sundays, you in my arms, your messy hair on my chest, both of us half-asleep, half-flirting, touching each other softly and whispering things that make us blush and laugh at the same time. I want late-night talks that turn into deep confessions, and deep confessions that turn into those dangerous, addictive kisses that neither of us wants to stop.
+
+Our future, for me, is full of little moments: your laughter in the kitchen, your perfume on my shirts, your lipstick on my lips because I kissed you too much before we left the house. It’s you stealing my hoodies, me stealing kisses, and both of us stealing a little more time in bed every morning because getting up means stopping what we’re doing under the blanket.
+
+I want to travel with you, get lost in new cities, take stupid photos, flirt in public like teenagers, and then come back to our room and continue what our eyes started saying all day. I want to hold your hand in crowded places and your waist in private ones, and make you feel so loved, desired, and safe that you never doubt for a second how crazy I am about you.
+
+One day, when we look back, I want us to say, “We really did it. We built this crazy, beautiful, funny, wild, romantic life together.” A life full of inside jokes, soft touches, whispered “I love yous” in the dark, and nights where the only thing louder than our laughter is our hearts beating way too fast when we get a little too close.
+
+You are my favorite person now, and you’re my favorite future too. I can’t wait for all our cute moments, our stupid fights, our deep talks, our passionate nights, and all the times I get to pull you closer, kiss your neck, and remind you that you’re mine and I’m completely, hopelessly, happily yours.`;
+
+    // ---------- Elements ----------
+    const miBtn = document.getElementById('miAmorBtn');
+    const intro = document.getElementById('intro');
+    const loveScene = document.getElementById('loveScene');
+    const particles = document.getElementById('particles');
+    const typedText = document.getElementById('typedText');
+    const cursor = document.getElementById('cursor');
+    const skipBtn = document.getElementById('skipBtn');
+    const backBtn = document.getElementById('backBtn');
+    const fileInput = document.getElementById('fileInput');
+    const gallery = document.getElementById('gallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const playMusicBtn = document.getElementById('playMusic');
+    const musicLabel = document.getElementById('musicLabel');
+    const confettiBtn = document.getElementById('confettiBtn');
+
+    // accessibility: respect prefers-reduced-motion
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---------- Simple WebAudio ambient loop (user-initiated) ----------
+    let audioCtx = null, musicPlaying = false;
+    function initAudio(){
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // create a soft pad with two detuned oscillators and a gentle LFO on gain
+      const master = audioCtx.createGain(); master.gain.value = 0.12; master.connect(audioCtx.destination);
+      const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 220;
+      const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 277.18; // ~ C#
+      const gain1 = audioCtx.createGain(); gain1.gain.value = 0.6;
+      const gain2 = audioCtx.createGain(); gain2.gain.value = 0.5;
+      // subtle filter
+      const filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 1000;
+      // LFO for slow swells
+      const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.06;
+      lfo.connect(lfoGain);
+      lfoGain.connect(gain1.gain);
+      lfoGain.connect(gain2.gain);
+
+      osc1.connect(gain1); gain1.connect(filt);
+      osc2.connect(gain2); gain2.connect(filt);
+      filt.connect(master);
+
+      osc1.start(); osc2.start(); lfo.start();
+
+      // simple arpeggio via scheduled notes using Gain nodes and oscillator detune
+      const now = audioCtx.currentTime;
+      const pattern = [0, 4, 7, 12]; // chord pattern (semitones)
+      const baseFreq = 220;
+      const arps = [];
+      for (let i=0;i<pattern.length;i++){
+        const o = audioCtx.createOscillator();
+        o.type='triangle';
+        o.frequency.value = baseFreq * Math.pow(2, pattern[i]/12);
+        const g = audioCtx.createGain(); g.gain.value = 0;
+        o.connect(g); g.connect(master);
+        o.start();
+        arps.push({o,g});
+      }
+      // loop arpeggio
+      let arpIndex = 0;
+      function playArp(){
+        const p = arps[arpIndex];
+        p.g.gain.cancelScheduledValues(audioCtx.currentTime);
+        p.g.gain.setValueAtTime(0, audioCtx.currentTime);
+        p.g.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.02);
+        p.g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1.2);
+        arpIndex = (arpIndex+1) % arps.length;
+        arppo = setTimeout(playArp, 420);
+      }
+      playArp();
+      // store cleanup closure
+      audioCtx._stopAll = () => {
+        master.disconnect();
+        arps.forEach(a=>{a.o.stop(); a.o.disconnect(); a.g.disconnect()});
+      };
+    }
+
+    function toggleMusic(){
+      if (!audioCtx){
+        initAudio();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      musicPlaying = !musicPlaying;
+      musicLabel.textContent = musicPlaying ? 'Stop music' : 'Play music';
+      // The audio runs quietly until stopped; we control play/pause by suspending/resuming
+      if (!musicPlaying) audioCtx.suspend();
+      else audioCtx.resume();
+    }
+
+    // ---------- Typewriter ----------
+    let typer = { index:0, paused:false, running:false, timeout:null };
+    function startTyping(text){
+      if (reduceMotion) {
+        typedText.textContent = text;
+        cursor.style.display = 'none';
+        return;
+      }
+      typer.running = true;
+      typedText.textContent = '';
+      typer.index = 0;
+      const chars = text.split('');
+      function step(){
+        if (!typer.running) return;
+        if (typer.index >= chars.length) { cursor.style.display='none'; return; }
+        typedText.textContent += chars[typer.index++];
+        // auto-scroll message container down as it types
+        const scrollEl = document.getElementById('messageScroll');
+        scrollEl.scrollTop = scrollEl.scrollHeight;
+        const delay = (chars[typer.index-1] === '\\n') ? 220 : (/[.,!?]/.test(chars[typer.index-1]) ? 40 + Math.random()*120 : 18 + Math.random()*28);
+        typer.timeout = setTimeout(step, delay);
+      }
+      cursor.style.display='inline-block';
+      step();
+    }
+    function skipTyping(){
+      typer.running = false;
+      clearTimeout(typer.timeout);
+      typedText.textContent = MESSAGE;
+      cursor.style.display='none';
+    }
+
+    // ---------- Particles (hearts, flowers) ----------
+    const heartSVG = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23ff4d6d" d="M12 21s-7.5-4.6-10-8.2C-1.4 8.2 3 3 7.5 6.2 9.4 7.6 10 9 12 10.8 14 9 14.6 7.6 16.5 6.2 21 3 23.4 8.2 22 12.8 19.5 16.4 12 21 12 21z"/></svg>');
+    const flowerSVG = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23ffb3c6" d="M12 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM19 9a2.5 2.5 0 1 0 5 0A2.5 2.5 0 0 0 19 9zM7.5 12a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0zM12 19.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM16.5 12a2.5 2.5 0 1 0 5 0 2.5 2.5 0 0 0-5 0z"/></svg>');
+    function spawnParticle(kind){
+      if (reduceMotion) return;
+      const el = document.createElement('div');
+      el.className = 'p';
+      const size = 18 + Math.random()*38;
+      el.style.position = 'absolute';
+      el.style.left = (10 + Math.random()*80) + '%';
+      el.style.bottom = '-8%';
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.backgroundImage = `url("data:image/svg+xml;utf8,${(kind==='heart')?heartSVG:flowerSVG}")`;
+      el.style.backgroundSize = 'contain';
+      el.style.backgroundRepeat='no-repeat';
+      el.style.transform = 'translateY(0) scale(0.8) rotate(' + (Math.random()*40-20) + 'deg)';
+      el.style.opacity=0;
+      particles.appendChild(el);
+      // animate via CSS transitions for broad compatibility
+      requestAnimationFrame(()=>{
+        el.style.transition = 'transform 4s cubic-bezier(.2,.9,.2,1), opacity 3.8s linear';
+        el.style.opacity = 1;
+        el.style.transform = `translateY(-120vh) translateX(${(Math.random()*60-30)}px) scale(${0.9 + Math.random()*0.6}) rotate(${(Math.random()*720-360)}deg)`;
+      });
+      setTimeout(()=> el.remove(), 4200 + Math.random()*1200);
+    }
+    let particleTimer = null;
+    function startParticles(){
+      if (particleTimer || reduceMotion) return;
+      particleTimer = setInterval(()=>{
+        for (let i=0;i< (1+Math.floor(Math.random()*3)); i++){
+          spawnParticle(Math.random()<0.7 ? 'heart' : 'flower');
+        }
+      }, 600);
+    }
+    function burstConfetti(xPerc, yPerc){
+      if (reduceMotion) return;
+      const count = 28;
+      for (let i=0;i<count;i++){
+        const c = document.createElement('div');
+        c.style.position='absolute';
+        c.style.left = xPerc + '%';
+        c.style.top = yPerc + '%';
+        c.style.width = '8px'; c.style.height='12px';
+        c.style.background = ['#ffd6e1','#ff9db3','#ffd48a','#ffd6f0'][Math.floor(Math.random()*4)];
+        c.style.opacity = 0.95;
+        c.style.borderRadius='2px';
+        c.style.transform = `translate(-50%,-50%) rotate(${Math.random()*360}deg)`;
+        c.style.zIndex=999;
+        c.style.pointerEvents='none';
+        document.body.appendChild(c);
+        const dx = (Math.random()*140-70), dy= (Math.random()*-220-60);
+        c.style.transition = `transform ${800+Math.random()*600}ms cubic-bezier(.1,.8,.2,1), opacity ${800+Math.random()*600}ms linear`;
+        requestAnimationFrame(()=> c.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*720}deg)`);
+        setTimeout(()=>{ c.style.opacity=0 }, 700+Math.random()*400);
+        setTimeout(()=> c.remove(), 1500);
+      }
+    }
+
+    // ---------- Gallery & Lightbox ----------
+    function addThumbnail(src, name){
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = name || 'photo';
+      img.className = 'thumb';
+      img.loading = 'lazy';
+      img.addEventListener('click', ()=> openLightbox(src,name));
+      gallery.appendChild(img);
+    }
+    function openLightbox(src, alt){
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || '';
+      lightbox.classList.add('open');
+    }
+    lightbox.addEventListener('click', (e)=> {
+      if (e.target !== lightboxImg) lightbox.classList.remove('open');
+    });
+
+    // ---------- Event wiring ----------
+    miBtn.addEventListener('click', ()=> {
+      // Reveal scene
+      intro.style.transition = 'opacity .5s ease, transform .55s ease';
+      intro.style.opacity = 0;
+      intro.style.transform = 'translateY(-18px) scale(.98)';
+      setTimeout(()=> intro.style.display = 'none', 520);
+
+      loveScene.classList.add('active');
+      loveScene.setAttribute('aria-hidden','false');
+
+      // start typing and particles
+      startTyping(MESSAGE);
+      startParticles();
+
+      // small heart burst
+      for (let i=0;i<8;i++) setTimeout(()=> spawnParticle('heart'), i*100);
+    });
+
+    skipBtn.addEventListener('click', skipTyping);
+
+    backBtn.addEventListener('click', ()=> {
+      // Stop audio
+      if (audioCtx && audioCtx.state !== 'closed') audioCtx.suspend();
+      musicLabel.textContent = 'Play music';
+      musicPlaying = false;
+
+      // hide scene, reset
+      loveScene.classList.remove('active');
+      loveScene.setAttribute('aria-hidden','true');
+      intro.style.display = '';
+      setTimeout(()=> { intro.style.opacity = 1; intro.style.transform = 'none'; }, 80);
+      // clear typed text
+      skipTyping();
+      typedText.textContent = '';
+      cursor.style.display='none';
+      // stop particles
+      clearInterval(particleTimer); particleTimer=null;
+      // remove all leftover particles
+      document.querySelectorAll('.particles .p').forEach(n=>n.remove());
+    });
+
+    // file uploads
+    fileInput.addEventListener('change', (e)=>{
+      const files = e.target.files;
+      if (!files) return;
+      Array.from(files).forEach(file=>{
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => addThumbnail(ev.target.result, file.name);
+        reader.readAsDataURL(file);
+      });
+      fileInput.value = '';
+    });
+
+    // confetti button
+    confettiBtn.addEventListener('click', (e) => {
+      const rect = confettiBtn.getBoundingClientRect();
+      const x = ((rect.left + rect.right)/2) / window.innerWidth * 100;
+      const y = ((rect.top + rect.bottom)/2) / window.innerHeight * 100;
+      burstConfetti(x,y);
+    });
+
+    // spawn gentle particles on click anywhere in love scene
+    loveScene.addEventListener('click',(e)=>{
+      // avoid triggering when clicking controls or images
+      const t = e.target;
+      if (t.closest('.circle-btn') || t.closest('.thumb') || t.closest('.ghost') || t.closest('input') ) return;
+      for (let i=0;i<6;i++) setTimeout(()=> spawnParticle(Math.random()<0.7?'heart':'flower'), i*80);
+    });
+
+    // play music
+    playMusicBtn.addEventListener('click', ()=> {
+      try { toggleMusic(); } catch(err){ console.warn(err) }
+    });
+
+    // start skip text if user focuses
+    typedText.addEventListener('dblclick', skipTyping);
+
+    // preload two sample photos
+    const samples = [
+      'https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop'
+    ];
+    samples.forEach(s=> addThumbnail(s,'sample'));
+
+    // ensure page loads with focus on button for keyboard users
+    miBtn.focus();
+
+    // keyboard accessibility
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (lightbox.classList.contains('open')) lightbox.classList.remove('open');
+        else if (loveScene.classList.contains('active')) backBtn.click();
+      }
+      if (e.key === 'Enter' && document.activeElement === miBtn) miBtn.click();
+    });
+
+    // Expose a tiny "surprise" when page is first touched on mobile: tiny particles
+    document.addEventListener('touchstart', function once(){ spawnParticle('heart'); spawnParticle('flower'); document.removeEventListener('touchstart', once); });
+
+  </script>
+</body>
+</html>
